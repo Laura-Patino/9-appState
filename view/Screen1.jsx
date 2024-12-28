@@ -3,7 +3,7 @@ import { Button, StyleSheet, Text, View } from "react-native";
 const Screen1 = ({setScreen}) => {
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>Questa è la schermata 1</Text>
+            <Text style={styles.title}>Questa è la schermata 1 (Uno)</Text>
             <Button title="Vai alla schermata 2" onPress={() => setScreen('Screen2')}></Button>
         </View>
     );
