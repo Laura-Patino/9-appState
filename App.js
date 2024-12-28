@@ -16,14 +16,31 @@ export default function App() {
 
 	useEffect( () => {
     console.log("----useEffect con currentScreen:", currentScreen, "-----");
-
+    AsyncStorage.getItem('lastScreen').then((value) => { console.log(value) }); 
+    
     const handleAppStateChange = (nextAppState) => { 
       //eseguito solo al cambio di stato dell'app (active o background) 
       console.log('\tnextAppState:', nextAppState, '- var currentScreen:', currentScreen);
       if (nextAppState === 'active') {
         console.log('\tApp attiva');
+        try {
+          AsyncStorage.getItem('lastScreen').then((value) => {
+            console.log('\t\tRecupero completato [lastScreen:', value, ']');
+            if (value) {
+              setCurrentScreen(value);
+            }
+          });
+        } catch (error) {
+          console.error('Errore nel recupero del valore dal AsyncStorage:', error);
+        }
       } else if (nextAppState === 'background') {
-        console.log('\tApp in background');
+        console.log('\tApp in background. Salvataggio nel AsyncStorage...');
+        try {
+          AsyncStorage.setItem('lastScreen', currentScreen);
+          console.log('\t\tSalvataggio completato [lastScreen:', currentScreen, ']');
+        } catch (e) {
+          console.error('Errore nel salvataggio nel AsyncStorage:', e);
+        }
       }
     };
     const subscription = AppState.addEventListener('change', handleAppStateChange ); //non al primo avvio
