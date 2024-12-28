@@ -4,39 +4,50 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
 import Screen1 from './view/Screen1';
 import Screen2 from "./view/Screen2";
+import Screen3 from "./view/Screen3";
 
 //Soluzione 1: iscrizione e rimozione dell'evento di cambio stato dell'app con solo useState (con useEffect [currentScreen])
 //Soluzione 2: iscrizione e rimozione dell'evento di cambio stato dell'app con useState e useRef (con useEffect [])
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState('Screen1');
-  
-  function setScreen(value) {
+  const [selectedUser, setSelectedUser] = useState(null);
+
+  function setScreen(value, user = null) {
     setCurrentScreen(value);
+    if ( user ) {
+      setSelectedUser(user);
+    }
   }
 
+  //RECUPERA LA SCHERMATA SALVATA ALL'AVVIO DELL'APP
+  useEffect(() => {
+    const loadLastScreen = async () => {
+      try {
+        const savedScreen = await AsyncStorage.getItem('lastScreen');
+        if (savedScreen !== null) {
+          setCurrentScreen(savedScreen);
+          console.log('Async Storage - Schermata recuperata:', savedScreen);
+        } else {
+          console.log('AsyncStorage - Nessuna schermata salvata');
+        }
+      } catch (error) {
+        console.error('Errore nel recupero della schermata:', error);
+      }
+    };
+    loadLastScreen();
+  }, []);
+
+  //GESTISCE IL CAMBIAMENTO DI STATO DELL'APP
 	useEffect( () => {
     console.log("----useEffect con currentScreen:", currentScreen, "-----");
-    AsyncStorage.getItem('lastScreen').then((value) => { console.log(value) }); 
     
-    const handleAppStateChange = (nextAppState) => { 
+    const handleAppStateChange = async (nextAppState) => { 
       //eseguito solo al cambio di stato dell'app (active o background) 
       console.log('\tnextAppState:', nextAppState, '- var currentScreen:', currentScreen);
-      if (nextAppState === 'active') {
-        console.log('\tApp attiva');
-        try {
-          AsyncStorage.getItem('lastScreen').then((value) => {
-            console.log('\t\tRecupero completato [lastScreen:', value, ']');
-            if (value) {
-              setCurrentScreen(value);
-            }
-          });
-        } catch (error) {
-          console.error('Errore nel recupero del valore dal AsyncStorage:', error);
-        }
-      } else if (nextAppState === 'background') {
+      if (nextAppState === 'background') {
         console.log('\tApp in background. Salvataggio nel AsyncStorage...');
         try {
-          AsyncStorage.setItem('lastScreen', currentScreen);
+          await AsyncStorage.setItem('lastScreen', currentScreen);
           console.log('\t\tSalvataggio completato [lastScreen:', currentScreen, ']');
         } catch (e) {
           console.error('Errore nel salvataggio nel AsyncStorage:', e);
@@ -52,9 +63,16 @@ export default function App() {
   } , [currentScreen]);
 
   //Reindirizza la schermata corrente
-  return (
+ /* return (
     currentScreen === 'Screen1' ? <Screen1 setScreen={setScreen}/> : <Screen2 setScreen={setScreen}/>
-  );
+  ); */
+  if (currentScreen === 'Screen1') {
+    return <Screen1 setScreen={setScreen} />;
+  } else if (currentScreen === 'Screen2') {
+    return <Screen2 setScreen={setScreen} user={selectedUser} />;
+  } else if (currentScreen === 'Screen3') {
+    return <Screen3 setScreen={setScreen} />;
+  }
 }
 
 const styles = StyleSheet.create({
