@@ -24,12 +24,19 @@ export default function App() {
     const loadLastScreen = async () => {
       try {
         const savedScreen = await AsyncStorage.getItem('lastScreen');
+        const savedUser = await AsyncStorage.getItem('selectedUser'); //AGGIUNTA
+
         if (savedScreen !== null) {
           setCurrentScreen(savedScreen);
           console.log('Async Storage - Schermata recuperata:', savedScreen);
         } else {
           console.log('AsyncStorage - Nessuna schermata salvata');
         }
+        //AGGIUNTA: recupero dello user selezionato all'avvio
+        if (savedUser) {
+          setSelectedUser(JSON.parse(savedUser));
+          console.log('Async Storage - selectedUser recuperato:', JSON.parse(savedUser));
+        } //
       } catch (error) {
         console.error('Errore nel recupero della schermata:', error);
       }
@@ -48,6 +55,11 @@ export default function App() {
         console.log('\tApp in background. Salvataggio nel AsyncStorage...');
         try {
           await AsyncStorage.setItem('lastScreen', currentScreen);
+          //AGGIUNTA: salvataggio dello user selezionato quando si passa in background
+          if (currentScreen === 'Screen2') {
+            await AsyncStorage.setItem('selectedUser', JSON.stringify(selectedUser));
+            console.log('\t\tselectedUser salvato:', selectedUser);
+          } //
           console.log('\t\tSalvataggio completato [lastScreen:', currentScreen, ']');
         } catch (e) {
           console.error('Errore nel salvataggio nel AsyncStorage:', e);
